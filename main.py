@@ -18,6 +18,9 @@ def main():
     number = -1
     while cap.isOpened():
         ret, frame = cap.read()
+        frame = cv2.flip(frame, 1)
+        if not ret:
+            continue
         key = cv2.waitKey(10)
         if (key == 27): #Press ESC to exit
             break
@@ -27,7 +30,6 @@ def main():
             cv2.putText(frame, 'Press I to start capturing hand gesture.', (0, 100), font, 1, (0,255,255), 2, cv2.LINE_AA)
         elif mode == 1:
             cv2.putText(frame, 'Currently recording! Press O to stop capturing hand gesture.', (0, 100), font, 1, (0,255,255), 2, cv2.LINE_AA)
-        
         image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         image.flags.writeable = False
         results = hands.process(image)
@@ -40,11 +42,15 @@ def main():
                     mp_draw.draw_landmarks(image, hand, mp_hands.HAND_CONNECTIONS)
                     hand = convert_landmark_list(hand)
                     hands_keypoint += hand
-                logging_cv(number, mode, hands_keypoint, len(hand_signals))
+                if (results.multi_handedness[0].classification[0].label != results.multi_handedness[1].classification[0].label):
+                    if (results.multi_handedness[0].classification[0].label == 'Right'):
+                        slice = int(len(hands_keypoint) / 2)
+                        hands_keypoint = hands_keypoint[slice:] + hands_keypoint[:slice]
+                    logging_cv(number, mode, hands_keypoint, len(hand_signals))
+
             else:
                 for side in results.multi_handedness:
-
-                    if side.classification[0].label == 'Right':
+                    if side.classification[0].label == 'Left':
                         for hand in results.multi_hand_landmarks:
                             mp_draw.draw_landmarks(image, hand, mp_hands.HAND_CONNECTIONS)
                             hand = convert_landmark_list(hand)
@@ -85,7 +91,7 @@ def logging_cv(number, mode, hand, signals_length):
     if mode == 0:
         pass
     elif mode == 1 and (0 <= number <= signals_length - 1):
-        csv_path = 'Models/KeyPoint/keypoint.csv'
+        csv_path = 'Final-Project/Models/KeyPoint/keypoint.csv'
         with open(csv_path, 'a', newline='') as f:
             writer = csv.writer(f)
             hand.insert(0, number)
