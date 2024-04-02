@@ -4,7 +4,7 @@ import cv2
 import csv
 
 def main():
-    hand_signals = ['Move', 'Stop']
+    hand_signals = ['FW', 'ST', 'RL', 'RR', 'BW']
     font = cv2.FONT_HERSHEY_SIMPLEX
 
     mp_hands = mp.solutions.hands
@@ -91,7 +91,7 @@ def logging_cv(number, mode, hand, signals_length):
     if mode == 0:
         pass
     elif mode == 1 and (0 <= number <= signals_length - 1):
-        csv_path = 'Final-Project/Models/KeyPoint/keypoint.csv'
+        csv_path = 'Models/KeyPoint/keypoint.csv'
         with open(csv_path, 'a', newline='') as f:
             writer = csv.writer(f)
             hand.insert(0, number)
